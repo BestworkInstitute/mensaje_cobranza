@@ -161,40 +161,41 @@
     const dataTableBody = document.querySelector("#dataTable tbody");
 
     document.getElementById('uploadExcel').addEventListener('change', function(event) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, {
-          type: 'array'
-        });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-        datos = [];
-        dataTableBody.innerHTML = "";
-        worksheet.forEach((row, index) => {
-          try {
-            let celular = String(row["CELULAR"]).replace('\u202a', '').replace('\u202c', '');
-            let monto = parseInt(String(row["MONTO"]).replace(/[.,]/g, '')); // Convertir a número entero
-            let cleanedData = [row["NOMBRE"], parseInt(celular), monto, row["DESCUENTO"], row["FECHA"]];
-            datos.push(cleanedData);
-            let newRow = dataTableBody.insertRow();
-            newRow.insertCell(0).textContent = row["NOMBRE"];
-            newRow.insertCell(1).textContent = celular;
-            newRow.insertCell(2).textContent = monto;
-            newRow.insertCell(3).textContent = row["DESCUENTO"];
-            newRow.insertCell(4).textContent = row["FECHA"];
-          } catch (error) {
-            logToConsole(`Error en el índice ${index}: ${row["CELULAR"]} no es un número válido.`);
-          }
-        });
-        if (datos.length > 0) {
-          document.getElementById("enviarMensajesBtn").disabled = false;
-          logToConsole(`${datos.length} contactos cargados`);
-        }
-      };
-      reader.readAsArrayBuffer(file);
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, {
+      type: 'array'
     });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    datos = [];
+    dataTableBody.innerHTML = "";
+    worksheet.forEach((row, index) => {
+      try {
+        let celular = String(row["CELULAR"]).replace('\u202a', '').replace('\u202c', '');
+        let monto = Math.floor(parseFloat(String(row["MONTO"]))); // Obtener solo la parte entera del número
+        let cleanedData = [row["NOMBRE"], parseInt(celular), monto, row["DESCUENTO"], row["FECHA"]];
+        datos.push(cleanedData);
+        let newRow = dataTableBody.insertRow();
+        newRow.insertCell(0).textContent = row["NOMBRE"];
+        newRow.insertCell(1).textContent = celular;
+        newRow.insertCell(2).textContent = monto;
+        newRow.insertCell(3).textContent = row["DESCUENTO"];
+        newRow.insertCell(4).textContent = row["FECHA"];
+      } catch (error) {
+        logToConsole(`Error en el índice ${index}: ${row["CELULAR"]} no es un número válido.`);
+      }
+    });
+    if (datos.length > 0) {
+      document.getElementById("enviarMensajesBtn").disabled = false;
+      logToConsole(`${datos.length} contactos cargados`);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
 
     const flow = "9c1b0e8c-cd2c-4ed0-bbfe-768839954bf6";
     let contador80En15Min = 0;
